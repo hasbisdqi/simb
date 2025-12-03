@@ -47,8 +47,14 @@ class PostResource extends Resource
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
                 TextInput::make('slug'),
+                Textarea::make('excerpt')
+                    ->rows(3)
+                    ->maxLength(255),
                 FileUpload::make('cover_image')
-                    ->image(),
+                    ->image()
+                    ->disk('public')
+                    ->directory('posts/images')
+                    ->visibility('public'),
                 Select::make('status')
                     ->required()
                     ->options([
@@ -72,6 +78,9 @@ class PostResource extends Resource
                     ->columnSpanFull(),
                 TextEntry::make('title'),
                 TextEntry::make('slug'),
+                TextEntry::make('excerpt')
+                    ->placeholder('-')
+                    ->columnSpanFull(),
                 Section::make('Content')
                     ->schema([
                         TextEntry::make('content')
@@ -94,9 +103,11 @@ class PostResource extends Resource
         return $table
             ->recordTitleAttribute('title')
             ->columns([
-                ImageColumn::make('cover_image'),
+                ImageColumn::make('cover_image')
+                    ->disk('public'),
                 TextColumn::make('title')
-                    ->searchable(),
+                    ->searchable()
+                    ->description(fn(Post $record) => Str::limit($record->excerpt, 50)),
                 TextColumn::make('slug')
                     ->searchable(),
                 TextColumn::make('status')
