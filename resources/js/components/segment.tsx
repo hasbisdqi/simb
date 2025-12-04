@@ -1,7 +1,7 @@
 export default function Segment({ children, bg_image }: { children: React.ReactNode, bg_image?: string }) {
   return (
     <div
-      className="block w-full py-10 px-20"
+      className="block w-full py-10 px-20 bg-cover"
       style={bg_image ? { backgroundImage: `url(${bg_image})` } : {}
       }>
       {children}
@@ -12,7 +12,7 @@ export default function Segment({ children, bg_image }: { children: React.ReactN
 function SegmentTitle({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <span className="flex flex-row gap-8 items-center">
+      <span className="flex flex-row gap-8 items-center scroll-pt-64">
         <h2 className="text-3xl font-bold">
           {children}
         </h2>

@@ -2,34 +2,19 @@
 
 namespace App\Filament\Resources\Posts;
 
-use App\Filament\Resources\Posts\Pages\ManagePosts;
+use App\Filament\Resources\Posts\Pages\CreatePost;
+use App\Filament\Resources\Posts\Pages\EditPost;
+use App\Filament\Resources\Posts\Pages\ListPosts;
+use App\Filament\Resources\Posts\Pages\ViewPost;
+use App\Filament\Resources\Posts\Schemas\PostForm;
+use App\Filament\Resources\Posts\Schemas\PostInfolist;
+use App\Filament\Resources\Posts\Tables\PostsTable;
 use App\Models\Post;
 use BackedEnum;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\RichEditor\RichContentRenderer;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\ViewEntry;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 
 class PostResource extends Resource
 {
@@ -41,113 +26,33 @@ class PostResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('title')
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
-                TextInput::make('slug'),
-                Textarea::make('excerpt')
-                    ->rows(3)
-                    ->maxLength(255),
-                FileUpload::make('cover_image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('posts/images')
-                    ->visibility('public'),
-                Select::make('status')
-                    ->required()
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                        'archived' => 'Archived',
-                    ])
-                    ->default('draft'),
-                RichEditor::make('content')
-                    ->required()
-                    ->columnSpanFull(),
-            ]);
+        return PostForm::configure($schema);
     }
 
     public static function infolist(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                ImageEntry::make('cover_image')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
-                TextEntry::make('title'),
-                TextEntry::make('slug'),
-                TextEntry::make('excerpt')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
-                Section::make('Content')
-                    ->schema([
-                        TextEntry::make('content')
-                            ->markdown()
-                            ->placeholder('-')
-                            ->columnSpanFull(),
-                    ])->columnSpanFull(),
-                TextEntry::make('status'),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-            ]);
+        return PostInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->recordTitleAttribute('title')
-            ->columns([
-                ImageColumn::make('cover_image')
-                    ->disk('public'),
-                TextColumn::make('title')
-                    ->searchable()
-                    ->description(fn(Post $record) => Str::limit($record->excerpt, 50)),
-                TextColumn::make('slug')
-                    ->searchable(),
-                TextColumn::make('status')
-                    ->searchable()
-                    ->badge(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                        'archived' => 'Archived',
-                    ]),
-            ])
-            ->recordActions([
-                ActionGroup::make([
-                    ViewAction::make(),
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ])
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return PostsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ManagePosts::route('/'),
+            'index' => ListPosts::route('/'),
+            'create' => CreatePost::route('/create'),
+            'view' => ViewPost::route('/{record}'),
+            'edit' => EditPost::route('/{record}/edit'),
         ];
     }
 }
